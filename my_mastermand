@@ -1,0 +1,106 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <time.h>
+
+bool in_inner(char* text, char symbol){
+    if(text == 0) return true;
+    for(int i = 0; i < strlen(text); i++){
+        if(text[i] == symbol)
+            return false;
+    }
+    return true;
+}
+char* get_4digitnum(){             // char tipidagi 4xonali tasodifiy sonni chiqarib beradigan funksiya
+    char* digitnum = malloc(4); // xotiradan 4ta belgi sig`adigan 4 bayt joy ajratish
+    int dig = 0;
+    srand(time(0)); // tasodifiy sonlar generatori
+    while(strlen(digitnum) < 4){   // kodning uzunligin tekshirish
+        char m = rand() % 8 + '0';   // int -> char |  21-line -> generator bergan sonni bir o`zgaruvchiga o`zlashtirish
+        if(in_inner(digitnum, m))
+            digitnum[dig++] = m;           // 23-line -> 8-line   ---> o`yin shartiga ko`ra, tasodifiy 4 xonali sonda 1 ta raqam 2 marta ishtirok etmasligi kerak, buni tekshirish uchun yuqorida bool toifasidagi funksiya ochib olamiz
+    }
+    return digitnum;
+}
+
+int gut_p(char* text_1, char* text_2)  {   // bir-biriga mos o`rinda turgan raqamlarning sonini hisoblash
+    int gut = 0;
+    for(int k = 0; k < strlen(text_1); k++){
+        if(text_1[k] == text_2[k])
+            gut++;
+    }
+    return gut;
+}
+
+bool in_revision(char* str){ // matn ichida 1 ta raqam 2 marta ishtirok etganini tekshirish
+    for(int i = 0; i < strlen(str) - 1; i++){
+        for(int j = i + 1; j < strlen(str); j++){
+            if(str[i] == str[j])
+                return true;
+        }
+    }
+    return false;
+}
+
+bool wrong_input(char* text){ // inputni harf yoki harf emasligini tekshirish
+    if(strlen(text) < 4) return true;
+    int i = 0;
+    while(text[i] != '\0'){
+        if(text[i] > '7' || text[i] < '0' || in_inner(text,*text))
+            return true;
+        i++;
+    }
+    return false;
+}
+
+int zn_p(char* text_1, char* text_2){   // matn ichida bor, lekin boshqa o`rinda turgan raqamlar sonini tekshirish
+    int zn = 0;
+    for(int j = 0; text_1[j] != '\0'; j++){
+        if(!in_inner(text_1, text_2[j]) && text_1[j] != text_2[j])
+            zn++;
+    }
+    return zn;
+}
+
+// ac - terminaldan kirayotgan argumentlar soni
+int main(int ac, char *av[]){
+    char* secret = malloc(4);
+    char* cin = malloc(16);
+    int rounds_number = 10;
+    int round = 0;
+    if (ac == 3) {
+        if(strcmp("-t", av[1]) == 0){
+            rounds_number = atoi(av[2]);
+            secret = get_4digitnum();
+        }
+        if(strcmp("-c", av[1]) == 0) {
+            secret = av[2];
+        }
+    } else {
+        secret = get_4digitnum();
+    }     
+    printf("Will you find the secret code\n");
+    // printf("%s -\n", secret);
+    while(round <= rounds_number){
+        printf("- - -\nRound %d\n >", round);
+        scanf("%s", cin);
+        if(wrong_input(cin)){
+            printf("Wrong input!\n");
+            continue;
+        }
+        int gp = gut_p(secret, cin);
+        int zp = zn_p(secret, cin);
+        if(gp == 4){
+            printf("Congratz! You did it!\n");
+            break;
+        } else {
+            printf("Well placed pieces: %d\n", gp);
+            printf("Misplaced pieces: %d\n", zp);
+        }
+        round++;
+    }
+    // printf("%s", get_4digitnum());
+    // printf("%d\n", zn_p("1234", "1243"));
+    return 0;
+}
